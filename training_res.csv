@@ -1,0 +1,3 @@
+epoch,disc_loss,gen_gan_loss,gen_l1_loss,gen_total_loss,val_disc_loss,val_gen_gan_loss,val_gen_l1_loss,val_gen_total_loss
+0,1.1018604040145874,1.5917311906814575,0.11950851231813431,13.542582511901855,NA,NA,NA,NA
+1,1.200484275817871,1.1664913892745972,0.10421723127365112,11.588214874267578,NA,NA,NA,NA
