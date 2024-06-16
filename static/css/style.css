@@ -70,3 +70,66 @@ body{
     background: #fff;
     color: #000;
 }
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+    width: 80%;
+    background: #fff;
+    margin-left: 10%;
+}
+.container .left{
+    display: flex;
+    flex-direction: column;
+    justify-content:baseline;
+   margin-top: 10%;
+    width: 50%;
+    height: 100%;
+}
+.container .left img{
+    height: 50vh;
+    width: 50vh;
+}
+.container .right{
+    
+    position: relative;
+    flex-direction: column;
+    justify-content: left;
+    
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    margin-top: 20%;
+}
+.container .right h1{
+    font-size: 40px;
+    font-weight: 900;
+    color: #000;
+}
+.container .right p{
+    font-size: 17px;
+    font-weight: 400;
+    color: #000;
+    margin-top: 20px;
+}
+.container .right a{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30%;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    background: #000;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+.container .right a:hover{
+    background: #fff;
+    color: #000;
+    border: 2px solid #000;
+}
