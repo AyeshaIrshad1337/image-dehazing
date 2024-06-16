@@ -17,7 +17,6 @@
             <a href="#">HOME</a>
             <a href="#">DEHAZER</a>
             <a href="#">ABOUT</a>
-            
         </div>
         <div class="contact">
             <a href="#">CONTACT</a>
@@ -31,6 +30,31 @@
             <h1>DEHAZER</h1>
             <p>Dehazer is a software that removes haze from images. It is a simple and easy to use software that can be used by anyone to remove haze from images. It is a powerful tool that can be used to enhance the quality of images by removing haze from them.</p>
             <a href="#">TRY NOW!!</a>
+        </div>
+    </div>
+    <div class="dehazer-container">
+        <div class="left">
+            <h1>UPLOAD IMAGE</h1>
+            <div class="upload-img">
+                <input type="file" id="file" accept="image/*">
+                <label for="file">Choose File</label>
+            </div>
+        </div>
+        <div class="vr"></div>
+        <div class="right">
+            <table>
+                <tr>
+                    <td>Dehazed Image</td>
+                </tr>
+                <tr>
+                    <td><img src="{% static 'images/white.png' %}" alt="image"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="{% static 'images/white.png' %}" download>Download Image</a>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
