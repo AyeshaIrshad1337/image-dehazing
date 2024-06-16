@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Document</title>
+    <title>Image Dehazer</title>
 </head>
 <body>
     <div class="header">
@@ -15,8 +15,8 @@
         </div>
         <div class="menu">
             <a href="#">HOME</a>
-            <a href="#">DEHAZER</a>
-            <a href="#">ABOUT</a>
+            <a href="#model">DEHAZER</a>
+            <a href="#about">ABOUT</a>
         </div>
         <div class="contact">
             <a href="#">CONTACT</a>
@@ -32,7 +32,7 @@
             <a href="#">TRY NOW!!</a>
         </div>
     </div>
-    <div class="dehazer-container">
+    <div class="dehazer-container" id="model">
         <div class="left">
             <h1>UPLOAD IMAGE</h1>
             <div class="upload-img">
@@ -55,6 +55,23 @@
                     </td>
                 </tr>
             </table>
+        </div>
+    </div>
+    <div class="about-container" id="about" >
+        <div class="left">
+            <img src="{% static 'images/ayeshairshad.jpeg' %}" alt="image">
+        </div>
+        <div class="right">
+            <h1>ABOUT TEAM</h1>
+            <p>I am a passionate and dedicated professional with a keen interest in technology and innovation. With a strong background in software development, I thrive on challenging projects that require creative problem-solving and meticulous attention to detail. My expertise spans across various programming languages and frameworks, enabling me to contribute effectively to multidisciplinary teams. Outside of work, I enjoy exploring the latest tech trends, participating in coding communities, and sharing knowledge with peers. Committed to lifelong learning, I continuously seek opportunities to enhance my skills and make a positive impact in the tech world.</p>
+            <div class="contact-icons">
+                <a href="https://github.com/ayeshairshad1337" target="_blank">
+                    <img src="{% static 'images/github-icon.png' %}" alt="GitHub">
+                </a>
+                <a href="mailto:ayeshaitshad124@gmail.com">
+                    <img src="{% static 'images/mail-icon.png' %}" alt="Email">
+                </a>
+            </div>
         </div>
     </div>
 </body>
