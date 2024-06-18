@@ -1,6 +1,7 @@
-import os 
+import os
 import cv2
 import numpy as np
+
 def preprocess_image(image_path, size=(256, 256)):
     """
     Load and preprocess a single image.
@@ -16,6 +17,7 @@ def preprocess_image(image_path, size=(256, 256)):
     image = cv2.resize(image, size)
     image = image / 255.0  # Normalize to [0, 1] range
     return image
+
 def load_dataset(input_dir, target_dir, size=(256, 256)):
     """
     Load and preprocess the dataset from input and target directories.
@@ -32,10 +34,8 @@ def load_dataset(input_dir, target_dir, size=(256, 256)):
     input_images = []
     target_images = []
     for input_image, target_image in zip(os.listdir(input_dir), os.listdir(target_dir)):
-        input_image = cv2.imread(os.path.join(input_dir, input_image))
-        target_image = cv2.imread(os.path.join(target_dir, target_image))
-        input_image =preprocess_image(input_image, size)
-        target_image = preprocess_image(target_image, size)
+        input_image = preprocess_image(os.path.join(input_dir, input_image), size)
+        target_image = preprocess_image(os.path.join(target_dir, target_image), size)
         input_images.append(input_image)
         target_images.append(target_image)
     return np.array(input_images), np.array(target_images)
