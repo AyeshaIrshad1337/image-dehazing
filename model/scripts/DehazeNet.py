@@ -1,10 +1,11 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv2D, ReLU, Reshape, MaxPooling2D, Concatenate, Dense, Flatten, Activation
+from tensorflow.keras.layers import Input, Conv2D, ReLU, Reshape, MaxPooling2D, Concatenate, Dense, Flatten, Activation, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import numpy as np
 from preprocessing import load_dataset
+
 def conv_layer(inputs, filters, kernel_size, strides=(1, 1), padding='same', activation=None):
     return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)(inputs)
 
@@ -19,8 +20,8 @@ class Maxout(tf.keras.layers.Layer):
     def call(self, inputs):
         shape = tf.shape(inputs)
         num_channels = shape[-1]
-        assert num_channels % self.num_units == 0
-        new_shape = tf.concat([shape[:-1], [self.num_units, num_channels // self.num_units]], axis=0)
+        tf.debugging.assert_equal(num_channels % self.num_units, 0, message="Number of channels must be divisible by num_units")
+        new_shape = tf.concat([shape[:-1], [self.num_units, num_channels // self.num_units]], axis=-1)
         output = tf.reduce_max(tf.reshape(inputs, new_shape), axis=-1)
         return output
 
@@ -28,7 +29,7 @@ def dehazenet(input_shape):
     input = Input(shape=input_shape)
 
     # Feature Extraction
-    x = conv_layer(input, filters=20, kernel_size=(5, 5), activation='relu')
+    x = conv_layer(input, filters=16, kernel_size=(5, 5), activation='relu')
     
     # Feature Extraction Maxout
     x = Maxout(4)(x)
@@ -47,11 +48,13 @@ def dehazenet(input_shape):
     # Non-linear Regression
     x = conv_layer(x, filters=48, kernel_size=(6, 6))
     x = Activation(brelu)(x)
-    
-    x = Flatten()(x)
-    output = Dense(1, activation=None)(x)
-    
-    model = Model(inputs=input, outputs=output, name="DehazeNet")
+
+    # Upsampling to match input shape
+    x = Conv2DTranspose(filters=48, kernel_size=(6, 6), strides=(2, 2), padding='same')(x)
+    x = Conv2DTranspose(filters=32, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = Conv2DTranspose(filters=input_shape[-1], kernel_size=(3, 3), padding='same')(x)
+
+    model = Model(inputs=input, outputs=x, name="DehazeNet")
     
     return model
 
@@ -65,10 +68,11 @@ def train_model(input_shape, input_dir, target_dir):
     model.compile(optimizer=Adam(), loss='mean_squared_error', metrics=['accuracy'])
     
     model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
-    model.save('D:\image-dehazing\model\models\dehazing_model.h5')
+    model.save('D:\\image-dehazing\\model\\models\\dehazing_model.h5')
+
 if __name__ == '__main__':
-    input_shape = (256, 256, 3) 
-    input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'  
+    input_shape = (144, 144, 3)
+    input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 
     train_model(input_shape, input_dir, target_dir)
