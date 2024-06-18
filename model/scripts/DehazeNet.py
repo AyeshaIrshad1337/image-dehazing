@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv2D, ReLU, Reshape, MaxPooling2D, Concatenate, Dense, Flatten, Activation, Conv2DTranspose
+from tensorflow.keras.layers import Input, Conv2D, ReLU, Reshape,UpSampling2D, MaxPooling2D, Concatenate, Dense, Flatten, Activation, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
@@ -29,13 +29,14 @@ def dehazenet(input_shape):
     input = Input(shape=input_shape)
 
     # Feature Extraction
-    x = conv_layer(input, filters=16, kernel_size=(5, 5), activation='relu')
+    x = conv_layer((input), filters=16, kernel_size=(5, 5), activation='relu')
     
     # Feature Extraction Maxout
     x = Maxout(4)(x)
 
     # Multi-Scale Processing
-    branch1 = conv_layer(x, filters=16, kernel_size=(3, 3), activation='relu')
+    
+    branch1 = conv_layer((x), filters=16, kernel_size=(3, 3), activation='relu')
     branch2 = conv_layer(x, filters=16, kernel_size=(5, 5), activation='relu')
     branch3 = conv_layer(x, filters=16, kernel_size=(7, 7), activation='relu')
 
@@ -49,11 +50,9 @@ def dehazenet(input_shape):
     x = conv_layer(x, filters=48, kernel_size=(6, 6))
     x = Activation(brelu)(x)
 
-    # Upsampling to match input shape
-    x = Conv2DTranspose(filters=48, kernel_size=(6, 6), strides=(2, 2), padding='same')(x)
-    x = Conv2DTranspose(filters=32, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x= UpSampling2D(size=(7, 7))(x)
+    x=Conv2DTranspose(filters=16, kernel_size=(7, 7), padding='same')(x)
     x = Conv2DTranspose(filters=input_shape[-1], kernel_size=(3, 3), padding='same')(x)
-
     model = Model(inputs=input, outputs=x, name="DehazeNet")
     
     return model
@@ -67,11 +66,11 @@ def train_model(input_shape, input_dir, target_dir):
 
     model.compile(optimizer=Adam(), loss='mean_squared_error', metrics=['accuracy'])
     
-    model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+    model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test))
     model.save('D:\\image-dehazing\\model\\models\\dehazing_model.h5')
 
 if __name__ == '__main__':
-    input_shape = (144, 144, 3)
+    input_shape = (196, 196, 3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 
