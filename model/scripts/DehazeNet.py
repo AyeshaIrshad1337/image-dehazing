@@ -83,7 +83,7 @@ def train_model(input_shape, input_dir, target_dir):
     model.save('D:\\image-dehazing\\model\\models\\dehazing_model.keras')
     reconstructed_model = keras.models.load_model("D:\\image-dehazing\\model\\models\\dehazing_model.keras")
     np.testing.assert_allclose(
-    model.predict(test_input), reconstructed_model.predict(x_test)
+    model.predict(X_test), reconstructed_model.predict(X_test)
 )
 if __name__ == '__main__':
     input_shape = (119, 119, 3)

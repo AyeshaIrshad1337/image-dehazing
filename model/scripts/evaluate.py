@@ -39,12 +39,7 @@ def evaluate_model(model_path, input_shape, input_dir, target_dir):
     # Split the data into training and testing sets
     _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Load the trained model
-    custom_objects = {
-        'brelu': brelu,
-        'Maxout': Maxout
-    }
-    model = load_model(model_path, custom_objects=custom_objects)
+    model = load_model(model_path)
 
     # Evaluate the model
     mse = MeanSquaredError()
@@ -61,8 +56,8 @@ def evaluate_model(model_path, input_shape, input_dir, target_dir):
     print(f'Accuracy: {accuracy_result}')
 
 if __name__ == '__main__':
-    model_path = 'D:\\image-dehazing\\model\\models\\dehazing_model.h5'
-    input_shape = (119, 119, 3)
+    model_path = 'D:\\image-dehazing\\model\\models\\dehazing_model.keras'
+    input_shape = (119, 119,3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 
