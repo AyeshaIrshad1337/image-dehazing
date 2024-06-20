@@ -5,13 +5,15 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import numpy as np
 from preprocessing import load_dataset
-
+from tensorflow import keras
 def conv_layer(inputs, filters, kernel_size, strides=(1, 1), padding='same', activation=None):
     return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)(inputs)
 
-def brelu(x):
-    return tf.maximum(0.0, tf.minimum(1.0, x))
+keras.saving.get_custom_objects().clear()
+# Define and register brelu as an activation function
 
+# Define and register Maxout custom layer
+@keras.saving.register_keras_serializable(package="MyLayers")
 class Maxout(tf.keras.layers.Layer):
     def __init__(self, num_units, **kwargs):
         super(Maxout, self).__init__(**kwargs)
@@ -24,6 +26,17 @@ class Maxout(tf.keras.layers.Layer):
         new_shape = tf.concat([shape[:-1], [self.num_units, num_channels // self.num_units]], axis=-1)
         output = tf.reduce_max(tf.reshape(inputs, new_shape), axis=-1)
         return output
+
+    def get_config(self):
+        config = super(Maxout, self).get_config()
+        config.update({"num_units": self.num_units})
+        return config
+
+@keras.saving.register_keras_serializable(package="my_package", name="custom_fn")
+def brelu(x):
+    return tf.maximum(0.0, tf.minimum(1.0, x))
+
+
 
 def dehazenet(input_shape):
     input = Input(shape=input_shape)
@@ -66,11 +79,14 @@ def train_model(input_shape, input_dir, target_dir):
 
     model.compile(optimizer=Adam(), loss='mean_squared_error', metrics=['accuracy'])
     
-    model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test))
-    model.save('D:\\image-dehazing\\model\\models\\dehazing_model.h5')
-
+    model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
+    model.save('D:\\image-dehazing\\model\\models\\dehazing_model.keras')
+    reconstructed_model = keras.models.load_model("D:\\image-dehazing\\model\\models\\dehazing_model.keras")
+    np.testing.assert_allclose(
+    model.predict(test_input), reconstructed_model.predict(x_test)
+)
 if __name__ == '__main__':
-    input_shape = (196, 196, 3)
+    input_shape = (119, 119, 3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 

@@ -1,15 +1,12 @@
 import tensorflow as tf
-from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, structural_similarity
+from tensorflow.keras.models import load_model
+from tensorflow.keras.metrics import MeanSquaredError, Accuracy
+from sklearn.model_selection import train_test_split
+import numpy as np
 from preprocessing import load_dataset
 from tensorflow import keras
-
-# Clear all previously registered custom objects
 keras.saving.get_custom_objects().clear()
-
 # Define and register brelu as an activation function
-@keras.saving.register_keras_serializable(package="MyActivations", name="brelu")
-def brelu(x):
-    return tf.maximum(0.0, tf.minimum(1.0, x))
 
 # Define and register Maxout custom layer
 @keras.saving.register_keras_serializable(package="MyLayers")
@@ -31,43 +28,42 @@ class Maxout(tf.keras.layers.Layer):
         config.update({"num_units": self.num_units})
         return config
 
-def evaluate_model(model_path, input_dir, target_dir, size=(256, 256)):
-    """
-    Evaluate the trained model on the test dataset.
-    
-    Args:
-    - model_path (str): Path to the trained model file.
-    - input_dir (str): Directory with input (hazed) images.
-    - target_dir (str): Directory with target (dehazed) images.
-    - size (tuple): Desired size for resizing the images.
+@keras.saving.register_keras_serializable(package="my_package", name="custom_fn")
+def brelu(x):
+    return tf.maximum(0.0, tf.minimum(1.0, x))
 
-    Returns:
-    - dict: Evaluation metrics (MSE, PSNR, SSIM).
-    """
-    # Load the trained model with custom objects
-    with keras.utils.custom_object_scope({'brelu': brelu, 'Maxout': Maxout}):
-        model = keras.models.load_model(model_path)
-    
-    # Load and preprocess the dataset
-    X, y_true = load_dataset(input_dir, target_dir, size)
+def evaluate_model(model_path, input_shape, input_dir, target_dir):
+    # Load preprocessed data
+    X, y = load_dataset(input_dir, target_dir, size=input_shape[:2])
 
-    # Make predictions
-    y_pred = model.predict(X)
+    # Split the data into training and testing sets
+    _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Compute evaluation metrics
-    mse = mean_squared_error(y_true.flatten(), y_pred.flatten())
-    psnr = peak_signal_noise_ratio(y_true, y_pred)
-    ssim = structural_similarity(y_true, y_pred, multichannel=True)
+    # Load the trained model
+    custom_objects = {
+        'brelu': brelu,
+        'Maxout': Maxout
+    }
+    model = load_model(model_path, custom_objects=custom_objects)
 
-    return {'MSE': mse, 'PSNR': psnr, 'SSIM': ssim}
+    # Evaluate the model
+    mse = MeanSquaredError()
+    accuracy = Accuracy()
+
+    y_pred = model.predict(X_test)
+    mse.update_state(y_test, y_pred)
+    accuracy.update_state(y_test, np.argmax(y_pred, axis=-1))
+
+    mse_result = mse.result().numpy()
+    accuracy_result = accuracy.result().numpy()
+
+    print(f'Mean Squared Error: {mse_result}')
+    print(f'Accuracy: {accuracy_result}')
 
 if __name__ == '__main__':
+    model_path = 'D:\\image-dehazing\\model\\models\\dehazing_model.h5'
+    input_shape = (119, 119, 3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
-    model_path = 'model\\models\\dehazing_model.h5'  # Path to the trained model
 
-    metrics = evaluate_model(model_path, input_dir, target_dir)
-    print("Evaluation metrics:")
-    print(f"MSE: {metrics['MSE']}")
-    print(f"PSNR: {metrics['PSNR']}")
-    print(f"SSIM: {metrics['SSIM']}")
+    evaluate_model(model_path, input_shape, input_dir, target_dir)
