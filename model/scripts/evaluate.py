@@ -39,7 +39,7 @@ def evaluate_model(model_path, input_shape, input_dir, target_dir):
     # Split the data into training and testing sets
     _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    model = load_model(model_path)
+    model = load_model(model_path, custom_objects={'brelu': brelu, 'Maxout': Maxout})
 
     # Evaluate the model
     mse = MeanSquaredError()
