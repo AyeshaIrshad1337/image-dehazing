@@ -1,12 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.metrics import MeanSquaredError, Accuracy
+from tensorflow.keras.metrics import MeanSquaredError
 from sklearn.model_selection import train_test_split
 import numpy as np
 from preprocessing import load_dataset
 from tensorflow import keras
+
+# Clear custom objects
 keras.saving.get_custom_objects().clear()
-# Define and register brelu as an activation function
 
 # Define and register Maxout custom layer
 @keras.saving.register_keras_serializable(package="MyLayers")
@@ -28,6 +29,7 @@ class Maxout(tf.keras.layers.Layer):
         config.update({"num_units": self.num_units})
         return config
 
+# Define and register brelu as an activation function
 @keras.saving.register_keras_serializable(package="my_package", name="custom_fn")
 def brelu(x):
     return tf.maximum(0.0, tf.minimum(1.0, x))
@@ -39,25 +41,26 @@ def evaluate_model(model_path, input_shape, input_dir, target_dir):
     # Split the data into training and testing sets
     _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+    # Load the model with custom objects
     model = load_model(model_path, custom_objects={'brelu': brelu, 'Maxout': Maxout})
 
     # Evaluate the model
     mse = MeanSquaredError()
-    accuracy = Accuracy()
 
+    # Make predictions
     y_pred = model.predict(X_test)
-    mse.update_state(y_test, y_pred)
-    accuracy.update_state(y_test, np.argmax(y_pred, axis=-1))
 
+    # Update the MSE state
+    mse.update_state(y_test, y_pred)
+
+    # Get the MSE result
     mse_result = mse.result().numpy()
-    accuracy_result = accuracy.result().numpy()
 
     print(f'Mean Squared Error: {mse_result}')
-    print(f'Accuracy: {accuracy_result}')
 
 if __name__ == '__main__':
     model_path = 'D:\\image-dehazing\\model\\models\\dehazing_model.keras'
-    input_shape = (119, 119,3)
+    input_shape = (119, 119, 3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 
