@@ -77,9 +77,9 @@ def train_model(input_shape, input_dir, target_dir):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = dehazenet(input_shape)
 
-    model.compile(optimizer=Adam(), loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer=Adam(), loss='mean_squared_error')
     
-    model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
+    model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
     model.save('D:\\image-dehazing\\model\\models\\dehazing_model.keras')
     reconstructed_model = keras.models.load_model("D:\\image-dehazing\\model\\models\\dehazing_model.keras")
     np.testing.assert_allclose(
