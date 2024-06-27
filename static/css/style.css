@@ -82,7 +82,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 60vh;
+    height: 70vh;
     width: 80%;
     background: #fff;
     margin-left: 10%;
@@ -109,6 +109,7 @@ body {
     width: 50%;
     height: 50%;
     background: #fff;
+    top: -10%;
 }
 
 .container .right h1 {
@@ -150,7 +151,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 60vh;
+    height: 80vh;
     width: 100%;
     background: #000;
 }
@@ -160,15 +161,15 @@ body {
     flex-direction: column;
     justify-content: left;
     width: 40%;
-    height: 50%;
-    top: 10%;
+    height: 70%;
+        
 }
 
 .dehazer-container .left h1 {
     font-size: 40px;
     font-weight: 900;
     color: #fff;
-    margin-left: 26%;
+    margin-left: 22%;
 }
 
 .dehazer-container .left .upload-img {
@@ -197,10 +198,60 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-   
 }
 
 .dehazer-container .left .upload-img label:hover {
+    background: #fff;
+    color: #000;
+}
+.dehazer-container .left .model-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align items */
+    width: 80%; /* Adjust width */
+    margin-left: 12%;
+    margin-bottom: 20px; /* Add margin for spacing */
+    color: #fff;
+}
+
+.dehazer-container .left .model-selection label {
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.dehazer-container .left .model-selection select {
+    width: 100%; /* Full width */
+    padding: 10px;
+    font-size: 17px;
+    border-radius: 5px;
+    border: 1px solid #fff;
+    background: #000;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.dehazer-container .left .model-selection select:hover {
+    background: #fff;
+    color: #000;
+}
+
+.dehazer-container .left button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    background: #000;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dehazer-container .left button:hover {
     background: #fff;
     color: #000;
 }
@@ -274,7 +325,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 60vh;
+    height: 70vh;
     width: 90%;
     background: #fff;
     margin: 0 auto;
@@ -284,7 +335,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: baseline;
-    margin-top: 10%;
+    margin-top: 20%;
     width: 50%;
     height: 100%;
 }
@@ -300,10 +351,12 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: left;
+    align-items: start;
     width: 50%;
     height: 100%;
     padding: 2%;
+    position: relative;
+    top: 10%;
 }
 
 .about-container .right h1 {

@@ -10,7 +10,6 @@
 <body>
     <div class="header">
         <div class="logo">
-            {% load static %}
             <img src="{% static 'images/logo.png' %}" alt="logo">
         </div>
         <div class="menu">
@@ -39,6 +38,18 @@
                 <input type="file" id="file" accept="image/*">
                 <label for="file">Choose File</label>
             </div>
+            <div id="uploaded-filename" style="margin-right:50px;  margin-top: 20px; color: #fff;"></div>
+            <div class="model-selection">
+                <label for="model-select">Choose Model:</label>
+                <select id="model-select">
+                    <option value="model1">Model 1</option>
+                    <!-- Add more models as needed -->
+                </select>
+            </div>
+            <button id="process-button">Process</button>
+            <div id="loading-message" style="display: none; color: #fff; margin-top: 20px;">
+                Processing, please wait...
+            </div>
         </div>
         <div class="vr"></div>
         <div class="right">
@@ -47,17 +58,17 @@
                     <td>Dehazed Image</td>
                 </tr>
                 <tr>
-                    <td><img src="{% static 'images/white.png' %}" alt="image"></td>
+                    <td><img id="dehazed-img" src="{% static 'images/white.png' %}" alt="image"></td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="{% static 'images/white.png' %}" download>Download Image</a>
+                        <a id="download-link" href="#" download>Download Image</a>
                     </td>
                 </tr>
             </table>
         </div>
     </div>
-    <div class="about-container" id="about" >
+    <div class="about-container" id="about">
         <div class="left">
             <img src="{% static 'images/ayeshairshad.jpeg' %}" alt="image">
         </div>
@@ -74,5 +85,10 @@
             </div>
         </div>
     </div>
+    <script>
+        // CSRF token setup for AJAX requests
+        var csrfToken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'js/scripts.js' %}"></script>
 </body>
 </html>

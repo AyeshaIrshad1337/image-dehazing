@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import numpy as np
-from preprocessing import load_dataset
+from .preprocessing import load_dataset
 from tensorflow import keras
 def conv_layer(inputs, filters, kernel_size, strides=(1, 1), padding='same', activation=None):
     return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)(inputs)
