@@ -1,73 +1,58 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv2D, ReLU, Reshape,UpSampling2D, MaxPooling2D, Concatenate, Dense, Flatten, Activation, Conv2DTranspose
+from tensorflow.keras.layers import Input, Conv2D, ReLU, MaxPooling2D, Concatenate, UpSampling2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import numpy as np
 from .preprocessing import load_dataset
 from tensorflow import keras
+
+# Clear any custom objects to avoid conflicts
+keras.saving.get_custom_objects().clear()
+
 def conv_layer(inputs, filters, kernel_size, strides=(1, 1), padding='same', activation=None):
     return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)(inputs)
 
-keras.saving.get_custom_objects().clear()
-# Define and register brelu as an activation function
-
-# Define and register Maxout custom layer
-@keras.saving.register_keras_serializable(package="MyLayers")
-class Maxout(tf.keras.layers.Layer):
-    def __init__(self, num_units, **kwargs):
-        super(Maxout, self).__init__(**kwargs)
-        self.num_units = num_units
-
-    def call(self, inputs):
-        shape = tf.shape(inputs)
-        num_channels = shape[-1]
-        tf.debugging.assert_equal(num_channels % self.num_units, 0, message="Number of channels must be divisible by num_units")
-        new_shape = tf.concat([shape[:-1], [self.num_units, num_channels // self.num_units]], axis=-1)
-        output = tf.reduce_max(tf.reshape(inputs, new_shape), axis=-1)
-        return output
-
-    def get_config(self):
-        config = super(Maxout, self).get_config()
-        config.update({"num_units": self.num_units})
-        return config
-
-@keras.saving.register_keras_serializable(package="my_package", name="custom_fn")
-def brelu(x):
-    return tf.maximum(0.0, tf.minimum(1.0, x))
-
-
-
 def dehazenet(input_shape):
     input = Input(shape=input_shape)
+    print("Input Layer", input.shape)
 
-    # Feature Extraction
-    x = conv_layer((input), filters=16, kernel_size=(5, 5), activation='relu')
-    
-    # Feature Extraction Maxout
-    x = Maxout(4)(x)
+    # conv1
+    conv1 = conv_layer(input, filters=20, kernel_size=(5, 5), activation=None)
+    relu1 = ReLU()(conv1)
+    print("Conv1 Layer", relu1.shape)
 
-    # Multi-Scale Processing
-    
-    branch1 = conv_layer((x), filters=16, kernel_size=(3, 3), activation='relu')
-    branch2 = conv_layer(x, filters=16, kernel_size=(5, 5), activation='relu')
-    branch3 = conv_layer(x, filters=16, kernel_size=(7, 7), activation='relu')
+    # pool1
+    pool1 = MaxPooling2D(pool_size=(5, 5), strides=(1, 1), padding='same')(relu1)
+    print("Pool1 Layer", pool1.shape)
 
-    # Concatenation
-    x = Concatenate(axis=-1)([branch1, branch2, branch3])
+    # conv2/1x1, conv2/3x3, conv2/5x5, conv2/7x7
+    conv2_1x1 = conv_layer(pool1, filters=16, kernel_size=(1, 1), activation=None)
+    conv2_3x3 = conv_layer(pool1, filters=16, kernel_size=(3, 3), padding='same', activation=None)
+    conv2_5x5 = conv_layer(pool1, filters=16, kernel_size=(5, 5), padding='same', activation=None)
+    conv2_7x7 = conv_layer(pool1, filters=16, kernel_size=(7, 7), padding='same', activation=None)
 
-    # Local Extremum
-    x = MaxPooling2D(pool_size=(7, 7))(x)
+    # concat conv2/output
+    conv2_output = Concatenate(axis=-1)([conv2_1x1, conv2_3x3, conv2_5x5, conv2_7x7])
+    relu2 = ReLU()(conv2_output)
+    print("Concat and ReLU2 Layer", relu2.shape)
 
-    # Non-linear Regression
-    x = conv_layer(x, filters=48, kernel_size=(6, 6))
-    x = Activation(brelu)(x)
+    # pool2
+    pool2 = MaxPooling2D(pool_size=(7, 7), strides=(1, 1), padding='same')(relu2)
+    print("Pool2 Layer", pool2.shape)
 
-    x= UpSampling2D(size=(7, 7))(x)
-    x=Conv2DTranspose(filters=16, kernel_size=(7, 7), padding='same')(x)
-    x = Conv2DTranspose(filters=input_shape[-1], kernel_size=(3, 3), padding='same')(x)
-    model = Model(inputs=input, outputs=x, name="DehazeNet")
-    
+    # ip1
+    ip1 = Conv2D(filters=48, kernel_size=(1, 1))(pool2)
+    drelu1 = ReLU()(ip1)
+    print("ip1 Layer", drelu1.shape)
+
+    # Upsampling
+    upsample = UpSampling2D(size=(1, 1))(drelu1)
+    conv2dtranspose1 = Conv2DTranspose(filters=16, kernel_size=(3, 3), padding='same')(upsample)
+    output = Conv2DTranspose(filters=input_shape[-1], kernel_size=(3, 3), padding='same')(conv2dtranspose1)
+    print("Output Layer", output.shape)
+
+    model = Model(inputs=input, outputs=output, name="DehazeNet")
     return model
 
 def train_model(input_shape, input_dir, target_dir):
@@ -77,16 +62,20 @@ def train_model(input_shape, input_dir, target_dir):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = dehazenet(input_shape)
 
-    model.compile(optimizer=Adam(), loss='mean_squared_error')
+    model.compile(optimizer=Adam(learning_rate=1e-4), loss='mean_squared_error')
     
-    model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
+    # Early stopping callback to avoid overfitting
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+    model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test), callbacks=[early_stopping])
     model.save('D:\\image-dehazing\\model\\models\\dehazing_model.keras')
+    
+    # Load the saved model and verify
     reconstructed_model = keras.models.load_model("D:\\image-dehazing\\model\\models\\dehazing_model.keras")
-    np.testing.assert_allclose(
-    model.predict(X_test), reconstructed_model.predict(X_test)
-)
+    np.testing.assert_allclose(model.predict(X_test), reconstructed_model.predict(X_test))
+
 if __name__ == '__main__':
-    input_shape = (119, 119, 3)
+    input_shape = (144, 144, 3)
     input_dir = 'D:\\image-dehazing\\model\\data\\train\\input'
     target_dir = 'D:\\image-dehazing\\model\\data\\train\\target'
 
