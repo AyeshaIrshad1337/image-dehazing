@@ -45,7 +45,7 @@ def load_models():
         return tf.maximum(0.0, tf.minimum(1.0, x))
 
     for model_name, model_path in model_paths.items():
-        models[model_name] = load_model(model_path, custom_objects={'brelu': brelu, 'Maxout': Maxout})
+        models[model_name] = load_model(model_path)
 
 load_models()
 
@@ -64,7 +64,7 @@ def dehaze(request):
         temp_file_path = default_storage.path(temp_file)
         
         # Preprocess the image
-        input_image = preprocess_image(temp_file_path, size=(119, 119))
+        input_image = preprocess_image(temp_file_path, size=(144, 144))
         input_image = np.expand_dims(input_image, axis=0)
 
         # Get the selected model and run prediction
