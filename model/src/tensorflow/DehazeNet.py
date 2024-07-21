@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import numpy as np
-from .preprocessing import load_dataset
+from preprocessing import load_dataset
 from tensorflow import keras
 
 # Clear any custom objects to avoid conflicts
